@@ -1,0 +1,289 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: #f3f4f6;
+  background-color: #18181b;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --radius: 0.625rem;
+
+  /* App backgrounds and text */
+  --background: #18181b;
+  --foreground: #f3f4f6;
+
+  /* Card/Popover */
+  --card: #23272e;
+  --card-foreground: #f3f4f6;
+  --popover: #23272e;
+  --popover-foreground: #f3f4f6;
+
+  /* Primary/Secondary/Accent */
+  --primary: #6366f1;
+  --primary-foreground: #fff;
+  --secondary: #23272e;
+  --secondary-foreground: #f3f4f6;
+  --muted: #23272e;
+  --muted-foreground: #a1a1aa;
+  --accent: #6366f1;
+  --accent-foreground: #fff;
+  --destructive: #ef4444;
+
+  --border: #4b5563;
+  --input: #374151;
+  --ring: #6366f1;
+
+  --chart-1: #6366f1;
+  --chart-2: #60a5fa;
+  --chart-3: #34d399;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
+
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #fff;
+  --sidebar-primary: #23272e;
+  --sidebar-primary-foreground: #fff;
+  --sidebar-accent: #23272e;
+  --sidebar-accent-foreground: #fff;
+  --sidebar-border: #4b5563;
+  --sidebar-ring: #6366f1;
+}
+
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  color: white;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:focus {
+  outline: none !important;
+}
+
+/* Remove click outline for all interactive elements */
+button:active {
+  outline: none !important;
+}
+
+a:active {
+  outline: none !important;
+}
+
+[role="button"]:active {
+  outline: none !important;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  :root {
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Fix autocomplete/autofill styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  box-shadow: 0 0 0 30px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* Dark mode autocomplete fixes */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-text-fill-color: #f9fafb !important;
+  background-color: #374151 !important;
+  box-shadow: 0 0 0 30px #374151 inset !important;
+}
+
+/* Remove bounce effect and overscroll behavior */
+* {
+  overscroll-behavior: none;
+}
+
+/* Specific overscroll behavior for scrollable containers */
+main {
+  overscroll-behavior: contain;
+}
+
+/* Map marker improvements */
+.marker-shadow {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Ensure perfect circles for markers */
+.marker-circle {
+  border-radius: 50%;
+  aspect-ratio: 1;
+}
+
+/* Pulse animation for real-time marker */
+@keyframes marker-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+
+  70% {
+    transform: scale(2);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+.marker-pulse {
+  animation: marker-pulse 2s infinite;
+}

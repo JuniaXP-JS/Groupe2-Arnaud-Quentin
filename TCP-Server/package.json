@@ -1,0 +1,48 @@
+{
+  "name": "serveur-tcp",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000i\u0000o\u0000t\u0000-\u0000t\u0000c\u0000p\u0000-\u0000a\u0000p\u0000i\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "watch": "tsc --watch",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev:docker": "cross-env NODE_ENV=docker ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev:prod": "cross-env NODE_ENV=prod ts-node-dev --respawn --transpile-only src/server.ts",
+    "start:server": "node dist/server.js",
+    "build:client": "tsc src/client.ts --outDir dist",
+    "start:client": "node dist/client.js",
+    "test": "jest --config jest.config.ts",
+    "jsdoc-explain": "npm run build && npx jsdoc dist -r -d jsdoc.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arnaud-rein/iot-tcp-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arnaud-rein/iot-tcp-api/issues"
+  },
+  "homepage": "https://github.com/arnaud-rein/iot-tcp-api#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/mongodb": "^4.0.6",
+    "@types/node": "^22.14.1",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "jsdoc": "^4.0.4",
+    "jsdoc-plugin-typescript": "^3.2.0",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.3.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "axios": "^1.8.4",
+    "dotenv-flow": "^4.1.0",
+    "mongodb": "^6.15.0"
+  }
+}

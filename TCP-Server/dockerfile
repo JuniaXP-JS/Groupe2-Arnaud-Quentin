@@ -1,0 +1,18 @@
+FROM node:23.8.0
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install
+
+# Compile TypeScript → JavaScript
+RUN npx tsc
+
+# Liste le JS compilé pour debug
+RUN ls -la dist
+
+EXPOSE 4000
+
+# Lance le JS compilé
+CMD ["node", "dist/server.js"]

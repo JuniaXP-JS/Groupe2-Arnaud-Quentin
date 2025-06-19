@@ -1,0 +1,41 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+docs/
+.env
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+
+# Compilateurs
+coverage/
+build/
+out/
+
+# Tests (si tu ajoutes Jest ou autre)
+*.lcov
+test-results/
+
+# Binaire (au cas où)
+*.exe
+*.out
+
+# MacOS metadata
+*.DS_Store
+
+dist/
