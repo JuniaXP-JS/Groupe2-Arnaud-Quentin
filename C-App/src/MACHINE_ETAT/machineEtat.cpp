@@ -1,18 +1,29 @@
+/**
+ * @file machineEtat.cpp
+ * @brief Implémente une machine d'état pour la gestion asynchrone des commandes AT vers le module SIM7080G.
+ *
+ * Ce fichier contient la logique d'une machine d'état (state machine) permettant de piloter l'envoi, la réception,
+ * la gestion des réponses, des timeouts et des erreurs pour toutes les commandes AT envoyées au module SIM7080G.
+ * Chaque tâche ATCommandTask évolue selon plusieurs états (IDLE, SENDING, WAITING_RESPONSE, RETRY, ERROR, END)
+ * afin d'assurer la robustesse et la fiabilité de la communication série avec le module.
+ *
+ * La machine d'état gère automatiquement les retries, les délais d'attente, l'analyse des réponses attendues,
+ * et permet de définir des callbacks d'erreur spécifiques pour chaque commande.
+ * Elle centralise ainsi toute la gestion asynchrone des échanges AT dans le projet.
+ */
+
 #include "machineEtat.hpp"
 
-// Constructor to initialize the ATCommandTask structure
 ATCommandTask::ATCommandTask(String cmd, String expected, int maxRetries, unsigned long timeout)
     : state(IDLE), command(cmd), expectedResponse(expected), responseBuffer(""), lastSendTime(0),
       retryCount(0), MAX_RETRIES(maxRetries), TIMEOUT(timeout), isFinished(false), result(""),
       onErrorCallback(nullptr) {}
 
-// State machine constructor
 MachineEtat::MachineEtat() {}
 unsigned long periodRandom = millis();
-// State machine implementation
 bool MachineEtat::updateATState(ATCommandTask &task)
 {
-    bool responseFound = false; // Added a boolean
+    bool responseFound = false;
     switch (task.state)
     {
     case IDLE:
@@ -33,28 +44,24 @@ bool MachineEtat::updateATState(ATCommandTask &task)
 
         while (Sim7080G.available())
         {
-            String response = Sim7080G.readStringUntil('\n'); // Read a full line
-            response.trim();                                  // Clean spaces and line breaks
+            String response = Sim7080G.readStringUntil('\n');
+            response.trim();
 
             Serial.println("[RESPONSE] " + response);
 
-            // Add the line to the response buffer
             task.responseBuffer += response + "\n";
 
-            // Check if the response contains the expected string
             bool responseOK = MachineEtat::analyzeResponse(task.responseBuffer, task.expectedResponse);
             if (responseOK)
             {
-                responseFound = true;   // Mark the response as found
-                task.isFinished = true; // ⬅️ Mark the task as finished
+                responseFound = true;
+                task.isFinished = true;
                 task.state = END;
                 Serial.println("[SUCCESS] Valid response for " + String(task.command));
                 return true;
-                // Immediately exit the while loop
             }
         }
 
-        // Timeout only if no response was found within the determined time
         if (millis() - task.lastSendTime > task.TIMEOUT)
         {
             Serial.println("[TIMEOUT] No complete response for " + String(task.command));
@@ -76,18 +83,17 @@ bool MachineEtat::updateATState(ATCommandTask &task)
             Serial.println("[ERROR] Failed after " + String(task.MAX_RETRIES) + " tries for " + String(task.command));
             task.state = ERROR;
             task.isFinished = true;
-            return false; // TO DO: replace with isBlocked or function that reboots
+            return false;
         }
 
     case ERROR:
         Serial.println("[ERROR] Problem with " + String(task.command));
         if (task.onErrorCallback)
         {
-            task.onErrorCallback(task); // Call the command-specific callback
+            task.onErrorCallback(task);
         }
         else
         {
-            // Default behavior if no callback is defined
             Serial.println("[ERROR] No specific error handler, returning to IDLE.");
             task.state = IDLE;
             task.retryCount = 0;
@@ -97,13 +103,13 @@ bool MachineEtat::updateATState(ATCommandTask &task)
         return false;
 
     case END:
-        return true; // The task is finished
+        return true;
 
     default:
 
         Serial.println("[DEFAULT] Unrecognized state for " + String(task.command));
         task.state = IDLE;
-        return false; // The task had a problem
+        return false;
     }
 
     return false;
@@ -113,7 +119,7 @@ bool MachineEtat::analyzeResponse(const String &response, const String &expected
 {
     Serial.println("[ANALYZE] Analyzing response: " + response);
     if (response.length() == 0)
-        return false; // Ignore if response is empty
+        return false;
 
     if (response.indexOf(expected) >= 0)
     {
@@ -121,7 +127,6 @@ bool MachineEtat::analyzeResponse(const String &response, const String &expected
         return true;
     }
 
-    // Check if the response contains "OK" at the end, which is often an indicator
     if (response.endsWith("OK") || response.indexOf("ERROR") >= 0)
     {
         Serial.println("[INFO] Response detected but not complete...");

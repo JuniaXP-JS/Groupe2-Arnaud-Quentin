@@ -4,6 +4,17 @@
 void (*SendATTestHook)(const String &, long) = nullptr;
 #endif
 
+/**
+ * @brief Envoie une commande AT au module SIM7080G et attend la réponse.
+ *
+ * Cette fonction envoie une commande AT sur le port série du module SIM7080G, puis lit la réponse jusqu'à obtenir "OK", "ACTIVE" ou jusqu'à expiration du délai.
+ * Elle retourne la réponse complète reçue du module.
+ * En mode test unitaire (UNIT_TEST), un hook peut être utilisé pour simuler l'envoi et la réception.
+ *
+ * @param message La commande AT à envoyer.
+ * @param delay Le délai maximal d'attente de la réponse (en millisecondes).
+ * @return La réponse complète du module SIM7080G sous forme de chaîne.
+ */
 String Send_AT(String message, long delay)
 {
   unsigned long start_time = millis();

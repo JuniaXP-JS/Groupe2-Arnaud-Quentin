@@ -2,8 +2,8 @@
  * @file main.cpp
  * @brief Point d'entrée principal du firmware "Around the World" pour ESP32C3.
  *
- * Initialise le module SIM7080G, configure les timers et lance la boucle principale.
- * Gère la récupération de l'IMEI, la configuration des broches et l'exécution périodique du pipeline global.
+ * Ce fichier initialise le module SIM7080G, configure les timers et lance la boucle principale.
+ * Il gère la récupération de l'IMEI, la configuration des broches et l'exécution périodique du pipeline global.
  */
 
 #include <Arduino.h>
@@ -26,6 +26,7 @@
  * @brief Fonction exécutée périodiquement pour lancer le pipeline global.
  *
  * Appelée toutes les 500 ms dans la boucle principale.
+ * @see pipelineGlobal()
  */
 void everyX();
 
@@ -46,6 +47,12 @@ void loop();
 
 // Implémentation
 
+/**
+ * @brief Exécute le pipeline global toutes les 500 ms.
+ *
+ * Vérifie si 500 ms se sont écoulées depuis le dernier appel, puis exécute pipelineGlobal().
+ * Met à jour le timer periodEveryX.
+ */
 void everyX()
 {
   if ((millis() - periodEveryX) > 500)
@@ -55,6 +62,12 @@ void everyX()
   }
 }
 
+/**
+ * @brief Initialise le matériel et les variables globales.
+ *
+ * Configure la broche d'alimentation, initialise la communication série,
+ * redémarre le module SIM7080G, affiche un message de bienvenue et récupère l'IMEI.
+ */
 void setup()
 {
   pinMode(PIN_PWRKEY, OUTPUT);
@@ -68,6 +81,11 @@ void setup()
   periodEveryX = millis();
 }
 
+/**
+ * @brief Boucle principale Arduino.
+ *
+ * Appelle everyX() à chaque itération pour exécuter les tâches périodiques.
+ */
 void loop()
 {
   everyX();

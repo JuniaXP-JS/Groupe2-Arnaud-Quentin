@@ -1,3 +1,17 @@
+/**
+ * @file SIM7080G_GNSS.cpp
+ * @brief Fonctions pour piloter et parser le module GNSS du SIM7080G.
+ *
+ * Ce fichier permet d'exécuter différentes commandes AT via Send_AT pour :
+ * - allumer ou éteindre le module GNSS,
+ * - récupérer les coordonnées GPS,
+ * - obtenir des informations détaillées sur l'état du module GNSS.
+ *
+ * On y trouve aussi des fonctions de parsing pour extraire les différentes valeurs (latitude, longitude, timestamp, etc.) à partir des réponses brutes du module.
+ *
+ * Enfin, la fonction principale getGnssResponse() construit une structure Gnss contenant toutes les valeurs utiles (coordonnées, statut, timestamp, altitude, etc.)
+ * afin de pouvoir les réutiliser facilement dans le reste de l'application, comme vu dans les autres fichiers GNSS.
+ */
 #include "SIM7080G_GNSS.hpp"
 
 DataGNSS dataGNSS[MAX_COORDS];
@@ -123,6 +137,15 @@ Float_gnss parseGNSS(String coord)
     return result;
 }
 
+/**
+ * @brief Récupère et parse les données GNSS du module SIM7080G.
+ *
+ * Cette fonction exécute la commande AT+CGNSINF pour obtenir les informations GNSS brutes,
+ * puis utilise les fonctions de parsing pour extraire les différentes valeurs (latitude, longitude, timestamp, etc.).
+ * Elle construit et retourne une structure Gnss contenant toutes les valeurs utiles pour le reste de l'application.
+ *
+ * @return Une structure Gnss remplie avec les coordonnées, le statut, le timestamp, l'altitude, etc.
+ */
 Gnss getGnssResponse()
 {
     Gnss gnss;

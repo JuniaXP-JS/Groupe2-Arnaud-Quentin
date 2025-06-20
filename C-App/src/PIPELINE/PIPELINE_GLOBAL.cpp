@@ -11,6 +11,7 @@ PipelineGLOBAL currentStepGLOBAL = PipelineGLOBAL::STEP_INIT_GLOBAL;
 // PIPELINE
 
 /**
+ * @file PIPELINE_GLOBAL.cpp
  * @var PipelineGLOBAL currentStepGLOBAL
  * @brief Variable globale indiquant l'étape courante du pipeline global.
  */

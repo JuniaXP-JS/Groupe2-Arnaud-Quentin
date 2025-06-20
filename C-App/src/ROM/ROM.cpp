@@ -1,3 +1,13 @@
+/**
+ * @file ROM.cpp
+ * @brief Fonctions utilitaires pour la gestion de la mémoire EEPROM (ROM).
+ *
+ * Ce fichier contient des fonctions pour écrire et lire des entiers, des structures et des chaînes de caractères
+ * dans la mémoire EEPROM de l'ESP32. Il permet notamment de stocker des identifiants, des coordonnées GNSS et des timestamps.
+ *
+ * @note Ce code permet de gérer la persistance des données en ROM, mais il n'est pas encore utilisé dans l'application principale.
+ */
+
 #include "ROM.hpp"
 // Function to manually write a uint32_t
 void writeUInt32(int addr, uint32_t val)
@@ -26,14 +36,6 @@ void writeFloatGnss(int addr, const Float_gnss &f)
   // writeUInt32(addr + 1, f.dec);
 }
 
-// Read a Float_gnss
-// Float_gnss readFloatGnss(int addr) {
-//   Float_gnss f;
-//   f.ent = EEPROM.read(addr);
-//   f.dec = readUInt32(addr + 1);
-//   return f;
-// }
-
 Float_gnss readFloatGnss(int addr, boolean lat)
 {
   Float_gnss f;
@@ -54,16 +56,7 @@ Float_gnss readFloatGnss(int addr, boolean lat)
 // Write a fixed-size String (truncated if too long)
 void writeFixedString(int addr, const String &str, int maxLength)
 {
-  Serial.println("in writeFixedString");
-  Serial.println("String str : " + str);
-  Serial.println("addr : " + String(addr) + " max string length : " + String(maxLength) + " str.length : " + str.length());
 
-  for (int i = 0; i < maxLength; i++)
-  {
-    Serial.print("------------------> FOR LOOP : ");
-
-    Serial.println(str[i]);
-  }
   for (int i = 0; i < maxLength; i++)
   {
     Serial.println("++++++++++++ FOR LOOP");
@@ -89,23 +82,12 @@ void writeFixedString(int addr, const String &str, int maxLength)
   }
 }
 
-// // Read a fixed-size String
-// String readFixedString(int addr, int maxLength) {
-//   char buf[maxLength + 1];
-//   for (int i = 0; i < maxLength; i++) {
-//     buf[i] = EEPROM.read(addr + i);
-//   }
-//   buf[maxLength] = '\0';
-//   return String(buf);
-// }
 String readFixedString(int addr, int maxLength)
 {
   char buf[maxLength + 1];
-  // Serial.println("---------in readFixedString ############");
   for (int i = 0; i < maxLength; i++)
   {
     char c = EEPROM.read(addr + i);
-    // Replace non-printable characters with a dot
     buf[i] = (c >= 1 && c <= 150) ? c : '.';
   }
   buf[maxLength] = '\0';
@@ -121,7 +103,7 @@ void writeSimIdToEEPROM(const String &simId)
     return;
   }
   writeFixedString(100, simId, 15);
-  EEPROM.commit(); // Don't forget to persist in flash
+  EEPROM.commit();
 }
 
 String readSimIdFromEEPROM()
@@ -132,7 +114,7 @@ String readSimIdFromEEPROM()
 String getEsp32Id()
 {
   uint64_t chipid = ESP.getEfuseMac();
-  char idBuffer[13]; // 12 hex characters + '\0'
+  char idBuffer[13];
   sprintf(idBuffer, "%04X%08X", (uint16_t)(chipid >> 32), (uint32_t)chipid);
   return String(idBuffer);
 }
@@ -151,10 +133,6 @@ void writeEspIdIfNotSet()
     writeEspIdToEEPROM();
   }
 }
-
-// String readEspIdFromEEPROM() {
-//   return readFixedString(ADDR_SIM_ID, 10);
-// }
 
 String readEspIdFromEEPROM()
 {
@@ -180,15 +158,13 @@ String parseGSNResponse(const String &rawResponse)
   Serial.println("Raw AT response received:");
   Serial.println("[" + rawResponse + "]");
 
-  // Split the response into lines
   int start = 0;
   int end = rawResponse.indexOf('\n');
   while (end != -1)
   {
     String line = rawResponse.substring(start, end);
-    line.trim(); // Remove \r, \n, spaces
+    line.trim();
 
-    // The IMEI is normally a 15-digit line
     if (line.length() == 15 && line.toInt() != 0)
     {
       Serial.println("IMEI detected : " + line);
@@ -248,17 +224,11 @@ void afficherCoordonneesDepuisEEPROM(bool *afficher)
 
 String getCoordonneesDepuisEEPROM()
 {
-  // EEPROM.begin(EEPROM_SIZE);
 
   String simId = readSimIdFromEEPROM();
   Float_gnss lat = readFloatGnss(ADDR_LATITUDE, true);
   Float_gnss lng = readFloatGnss(ADDR_LONGITUDE, false);
   String imei = readFixedString(100, 15);
-  // Serial.println("---------here is the SIM ID message =================================");
-  // Serial.println(simId);
-  // Serial.println("------------------------------------------------> result < -------------------------");
-  // // String ts = readFixedString(ADDR_TIMESTAMP, 20);
-  // String simId = readEspIdFromEEPROM();
 
   // Formatting with precision
   String latitude = String(lat.ent) + "." + String(lat.dec);
@@ -267,8 +237,6 @@ String getCoordonneesDepuisEEPROM()
   // String result = "{name:'test', position{Latitude: " + latitude + ", Longitude: " + longitude + "}}";
   // String result = "{\"name\":\"test\",\"position\":{\"latitude\":" + latitude + ",\"longitude\":" + longitude + "}}";
   String result = "{\"name\":\"" + imei + "\",\"position\":{\"latitude\":" + latitude + ",\"longitude\":" + longitude + "}}";
-  // Serial.println(result);
 
-  // Serial.println("result to be converted to CBOR Latitude: " + result);
   return result;
 }

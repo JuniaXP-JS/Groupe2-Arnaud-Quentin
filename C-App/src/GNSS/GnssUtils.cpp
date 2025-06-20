@@ -1,3 +1,19 @@
+/**
+ * @file GnssUtils.cpp
+ * @brief Utilitaires pour la gestion et la validation des coordonnées GNSS.
+ *
+ * Ce fichier permet de récupérer les coordonnées GPS à partir du module GNSS.
+ * La fonction principale, getGNSSValid(), appelle getGnssResponse() qui se charge de parser la réponse brute et de renvoyer une structure Gnss.
+ *
+ * La validité des coordonnées latitude et longitude est vérifiée : on considère qu'elles sont valides si elles sont différentes de 0.
+ * (On peut aussi, comme montré en commentaire, vérifier qu'elles sont différentes de 47 et 4, qui sont des valeurs par défaut, afin d'attendre de vraies coordonnées GPS.)
+ *
+ * Une section (commentée) permettrait aussi de vérifier la précision HDOP, mais pour simplifier, ce critère est désactivé afin de toujours récupérer des coordonnées.
+ *
+ * Les fonctions shiftLeftDataGNSS() et addGNSSInDataGNSS() servent à gérer un tableau de coordonnées GNSS :
+ * - shiftLeftDataGNSS() décale toutes les coordonnées d'une case vers la gauche pour faire de la place.
+ * - addGNSSInDataGNSS() ajoute une nouvelle coordonnée GNSS dans le tableau, en supprimant la plus ancienne si le tableau est plein.
+ */
 #include "GnssUtils.hpp"
 
 Gnss getGNSSValid()

@@ -19,7 +19,6 @@ void step_send_4g_function()
         else
         {
             period10min = millis();
-            // listeCoordonnees.clear();
             tableauJSONString = "";
             currentStepGLOBAL = PipelineGLOBAL::STEP_END_GLOBAL;
             currentStepGLOBAL = PipelineGLOBAL::STEP_END_GLOBAL;

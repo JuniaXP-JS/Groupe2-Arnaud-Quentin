@@ -21,7 +21,10 @@ export const LineChart: React.FC<LineChartProps> = ({ data, xAxisTitle, yAxisTit
      * Groups the input data by day and counts the number of items per day.
      */
     const groupedData = data.reduce((acc: Record<string, number>, item) => {
-        const date = new Date(item.updatedAt).toISOString().split('T')[0]; // Get YYYY-MM-DD format
+        if (!item.updatedAt) return acc; // Skip if updatedAt is missing
+        const dateObj = new Date(item.updatedAt);
+        if (isNaN(dateObj.getTime())) return acc; // Skip if invalid date
+        const date = dateObj.toISOString().split('T')[0]; // Get YYYY-MM-DD format
         acc[date] = (acc[date] || 0) + 1; // Count items per day
         return acc;
     }, {});

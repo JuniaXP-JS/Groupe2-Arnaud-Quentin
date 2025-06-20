@@ -1,18 +1,24 @@
-FROM node:23.8.0
+# Étape 1 : Build stage
+FROM node:23.8.0 AS builder
 
 WORKDIR /app
 
-COPY . .
-
+COPY package*.json ./
 RUN npm install
 
-# Compile TypeScript → JavaScript
+COPY . .
 RUN npx tsc
 
-# Liste le JS compilé pour debug
-RUN ls -la dist
+# Étape 2 : Final image
+FROM node:23.8.0 AS prod
+
+WORKDIR /app
+
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist ./dist
+
+RUN npm install --omit=dev
 
 EXPOSE 4000
 
-# Lance le JS compilé
 CMD ["node", "dist/server.js"]

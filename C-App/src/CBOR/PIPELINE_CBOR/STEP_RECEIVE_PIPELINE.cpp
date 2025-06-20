@@ -1,11 +1,20 @@
 #include "pipeline.hpp"
 
+/**
+ * @file STEP_RECEIVE_PIPELINE.cpp
+ * @brief Traite les messages CBOR reçus après l'envoi des données.
+ *
+ * Cette fonction analyse le contenu du dernier message CBOR reçu (lastReceivedCBOR) et adapte dynamiquement les options du pipeline :
+ * - ajuste la période d'envoi si l'option "periode" est reçue,
+ * - démarre le pipeline si l'option "start" est reçue,
+ * - met à jour la précision GNSS si l'option "precision" est reçue.
+ *
+ * Elle affiche les informations reçues sur le port série pour le débogage.
+ * À la fin du traitement, elle prépare la fermeture de la connexion en passant à l'étape STEP_CLOSE_CONNEXION.
+ */
 void STEP_RECEIVE_PIPELINE_FUNCTION()
 {
     Serial.println("[STEP_RECEIVE_PIPELINE] Waiting for CBOR messages.......................................");
-    // periodeAjustement = 5000UL; // 5 secondes
-    // Serial.print("periodeAjustement = ");
-    // Serial.println(periodeAjustement);
 
     Serial.print("lastReceivedCBOR = ");
     Serial.println(lastReceivedCBOR.dump().c_str());

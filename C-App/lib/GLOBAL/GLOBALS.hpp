@@ -5,8 +5,8 @@
 #define PIN_PWRKEY 7
 #define Sim7080G Serial1
 #define Sim7080G_BAUDRATE 57600
-#define PINGGY_LINK "rnqrg-185-223-151-250.a.free.pinggy.link"
-#define PINGGY_PORT 32913
+#define PINGGY_LINK "rnbxx-92-184-123-236.a.free.pinggy.link"
+#define PINGGY_PORT 41533
 #define MAX_COORDS 10
 #include <Arduino.h>
 #include <vector>

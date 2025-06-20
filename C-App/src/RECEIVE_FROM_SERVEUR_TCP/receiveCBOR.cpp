@@ -8,28 +8,24 @@ void lireEtDecoderCBOR()
     Serial.println("=========== BRUTE RESPONSE ===========");
     Serial.println(reponse);
 
-    // Isolate the last +CARECV line (in case there are several)
     int lastIndex = reponse.lastIndexOf("+CARECV:");
     if (lastIndex == -1)
-    {   
+    {
         Serial.println("No +CARECV found");
         return;
     }
 
-    // Extract only this line
     int endOfLine = reponse.indexOf('\n', lastIndex);
     String carecvLine = (endOfLine != -1) ? reponse.substring(lastIndex, endOfLine) : reponse.substring(lastIndex);
     carecvLine.trim();
     Serial.println("Selected line: " + carecvLine);
 
-    // Check size = 0
     if (carecvLine.indexOf(": 0") != -1)
     {
         Serial.println("No bytes to decode");
         return;
     }
 
-    // Find the comma
     int commaIndex = carecvLine.indexOf(',');
     if (commaIndex == -1)
     {
@@ -37,7 +33,6 @@ void lireEtDecoderCBOR()
         return;
     }
 
-    // Binary data after the comma
     String brut = carecvLine.substring(commaIndex + 1);
     brut.trim();
     Serial.println("Raw binary data: " + brut);
@@ -76,7 +71,7 @@ void lireEtDecoderCBOR()
     try
     {
         json j = json::from_cbor(buffer);
-        lastReceivedCBOR = j; // <-- Stockage global
+        lastReceivedCBOR = j;
         Serial.print("Decoded CBOR: ");
         Serial.println(j.dump().c_str());
 

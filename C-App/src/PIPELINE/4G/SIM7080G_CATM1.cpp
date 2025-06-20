@@ -1,3 +1,16 @@
+/**
+ * @file SIM7080G_CATM1.cpp
+ * @brief Gère l'établissement et la gestion de la connexion 4G (CAT-M1) avec le module SIM7080G.
+ *
+ * Ce fichier implémente un pipeline d'étapes pour configurer et établir la connexion 4G (CAT-M1) :
+ * - Activation du mode CAT-M1 et configuration du profil réseau.
+ * - Vérification de l'enregistrement réseau et de l'état PDP.
+ * - Récupération d'informations sur la connexion (APN, opérateur, signal, etc.).
+ * - Passage à l'étape suivante du pipeline une fois la connexion établie.
+ *
+ * Il permet ainsi de s'assurer que le module 4G est prêt à transmettre les données au serveur distant.
+ */
+
 #include "SIM7080G_CATM1.hpp"
 #include "SIM7080G_SERIAL.hpp"
 
@@ -67,7 +80,6 @@ void step_catm1_function()
                 Serial.print("ACTIVE detecté");
             }
 
-            // informations for you on CAT-M1 connexion
             Send_AT("AT+CGATT?");
             Send_AT("AT+CNACT?", 3000);
             String resultCNACT = findSelect(Send_AT("AT+CNACT?", 3000), "+CNACT:", 12, "\"", ".");
@@ -79,7 +91,6 @@ void step_catm1_function()
             Send_AT("AT+CCID");
             Send_AT("AT+COPS?");
             Send_AT("AT+CEREG?");
-            // signal quality
             Send_AT("AT+CSQ");
             currentStepCATM1 = CATM1_DONE;
         }
@@ -87,16 +98,12 @@ void step_catm1_function()
 
     case CATM1_POWER_OFF:
         Serial.println("[CATM1_POWER_OFF]");
-        // Example: module deactivation, resource release, etc.
-        // If everything is OK, move to the next step:
         currentStepCATM1 = CATM1_DONE;
         break;
 
     case CATM1_DONE:
         Serial.println("[CATM1_DONE]");
         currentStep4G = STEP_SEND_CBOR;
-        // End of CAT-M1 process, ready for a new sequence or waiting
-
         break;
     }
 }

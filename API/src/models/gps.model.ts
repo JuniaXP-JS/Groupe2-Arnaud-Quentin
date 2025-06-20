@@ -151,6 +151,6 @@ gpsDataSchema.set('toJSON', { virtuals: true });
  * GPS data model based on the schema.
  * Use this model for all GPS data database operations.
  */
-const GpsData = mongoose.model<IGpsData>('GpsData', gpsDataSchema);
+const GpsData = mongoose.model<IGpsData>('GpsDatas', gpsDataSchema);
 
 export default GpsData;
