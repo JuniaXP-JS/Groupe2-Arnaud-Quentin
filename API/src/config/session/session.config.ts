@@ -1,10 +1,10 @@
 import session from 'express-session';
-import connectMemcached from 'connect-memcached';
 import dotenv from 'dotenv-flow';
+import MongoStore from 'connect-mongo';
 
 /**
  * Session configuration module for Express.js application.
- * This module sets up session management using either Memcached (production) 
+ * This module sets up session management using either MongoStore (production) 
  * or memory store (test environment) for session storage.
  * 
  * @module SessionConfig
@@ -15,36 +15,34 @@ dotenv.config();
 
 /**
  * Flag to determine if the application is running in test environment.
- * In test mode, sessions are stored in memory instead of Memcached.
+ * In test mode, sessions are stored in memory instead of MongoStore.
  * 
  * @type {boolean}
  */
 const isTestEnv = process.env.NODE_ENV === 'test';
 
-/**
- * Memcached store constructor for session storage.
- * This creates a session store backed by Memcached for production use.
- * 
- * @type {Function}
- */
-const MemcachedStore = connectMemcached(session);
 
 /**
  * Session store instance.
- * Uses Memcached in production/development, or undefined (memory store) in test environment.
+ * Uses MongoStore in production/development, or undefined (memory store) in test environment.
  * 
- * @type {MemcachedStore|undefined}
+ * @type {MongoStore|undefined}
  */
-const storeInstance = isTestEnv
+const storeInstance: MongoStore | undefined = isTestEnv
   ? undefined // Use default memory store in test environment
-  : new MemcachedStore({
+  :
+
+  MongoStore.create({
+    mongoUrl: process.env.MONGO_URI || 'mongodb://localhost:27017/mon_iot_db',
+  })
+/*   new MemcachedStore({
     hosts: [process.env.MEMCACHED_HOST || '127.0.0.1:11211'],
     secret: process.env.SESSION_SECRET,
-  });
+  }); */
 
 // Log the store type being used
 if (storeInstance) {
-  console.log('MemcachedStore utilisé pour les sessions');
+  console.log('MongoStore utilisé pour les sessions');
 } else {
   console.log('Memory store utilisé pour les sessions (mode test)');
 }
@@ -53,7 +51,7 @@ if (storeInstance) {
  * Express session middleware configuration.
  * Configures session management with the following features:
  * - Session secret for signing cookies
- * - Session store (Memcached or memory)
+ * - Session store (MongoStore or memory)
  * - Cookie settings for security and expiration
  * - Session persistence options
  * 
@@ -84,7 +82,7 @@ const sessionMiddleware = session({
 
   /**
    * Session store instance for persistence.
-   * Uses Memcached in production, memory store in test environment.
+   * Uses MongoStore in production, memory store in test environment.
    */
   store: storeInstance,
 
