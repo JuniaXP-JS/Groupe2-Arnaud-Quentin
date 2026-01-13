@@ -24,7 +24,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(sessionMiddleware);  // Your session middleware will manage the session storage in MongoDB
 
-
 app.use(passport.initialize());
 app.use(passport.session());  // This is important for session-based authentication
 

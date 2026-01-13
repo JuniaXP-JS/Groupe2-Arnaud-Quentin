@@ -1,6 +1,7 @@
 // src/routes/auth.routes.ts
 import { Router } from 'express';
-import { login, register, logout } from '../controllers/auth/auth.controller';
+import { login, register, logout, totpSetup, totpVerify } from '../controllers/auth/auth.controller';
+import { requireTotp } from '../config/passport.config';
 
 const router = Router();
 
@@ -69,6 +70,12 @@ router.post('/register', register);
  *         description: Invalid credentials
  */
 router.post('/login', login);
+
+/**
+ * TOTP endpoints for MFA setup and verification
+ */
+router.post('/totp/setup', totpSetup);
+router.post('/totp/verify', totpVerify);
 
 /**
  * @swagger

@@ -1,5 +1,8 @@
 import passport from 'passport';
 import { getUserById } from '../services/user.service';
+import { Strategy as CustomStrategy } from 'passport-custom';
+import speakeasy from 'speakeasy';
+import { Request } from 'express';
 
 /**
  * Passport.js configuration module for session-based authentication.
@@ -27,7 +30,7 @@ passport.serializeUser((user: any, done: Function) => {
   if (!user || !user._id) {
     return done(new Error('User ID is missing'));
   }
-  
+
   // Store only the user ID (as string) in the session
   done(null, user._id.toString());
 });
@@ -48,12 +51,12 @@ passport.deserializeUser(async (id: string, done: Function) => {
   try {
     // Fetch the complete user object from database using the stored ID
     const user = await getUserById(id);
-    
+
     // If user is not found (e.g., deleted account), return error
     if (!user) {
       return done(new Error('User not found'), null);
     }
-    
+
     // Successfully return the user object for req.user
     done(null, user);
   } catch (err) {
@@ -63,10 +66,79 @@ passport.deserializeUser(async (id: string, done: Function) => {
 });
 
 /**
- * Configured Passport instance.
- * This instance has been set up with session-based authentication strategies
- * and can be used throughout the application for user authentication.
- * 
- * @type {object} Configured Passport.js instance
+ * Strategy "totp" :
+ * - si l'utilisateur n'a pas de secret TOTP -> passe (pas de MFA)
+ * - si req.session.mfaVerified + user id -> passe
+ * - sinon vérifie le token TOTP fourni (body.totp | header x-totp | query.totp)
+ * - en cas de succès : set req.session.mfaVerified = true
  */
+passport.use(
+  'totp',
+  new CustomStrategy(async (req: Request, done: Function) => {
+    try {
+      const user = req.user as any;
+      if (!user) return done(null, false, { message: 'User not authenticated' });
+
+      // If user has no TOTP configured, skip MFA
+      if (!user.totpSecret) return done(null, user);
+
+      // If session already validated for this user
+      if (req.session && (req.session as any).mfaVerified && (req.session as any).mfaUserId === user._id?.toString()) {
+        return done(null, user);
+      }
+
+      const token =
+        (req.body && (req.body as any).totp) ||
+        (req.headers && (req.headers as any)['x-totp']) ||
+        (req.query && (req.query as any).totp);
+
+      if (!token) {
+        return done(null, false, { message: 'TOTP token required' });
+      }
+
+      const verified = speakeasy.totp.verify({
+        secret: user.totpSecret,
+        encoding: 'base32',
+        token: String(token),
+        window: 1
+      });
+
+      if (!verified) {
+        return done(null, false, { message: 'Invalid TOTP' });
+      }
+
+      // Mark session as MFA-verified for this user
+      if (req.session) {
+        (req.session as any).mfaVerified = true;
+        (req.session as any).mfaUserId = user._id?.toString();
+      }
+
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  })
+);
+
+/**
+ * Middleware helper à utiliser sur les routes protégées qui nécessitent MFA.
+ * Exemple d'utilisation: passport authenticate 'totp' (n'utilise pas session pour authentifier
+ * puisque la session contient déjà req.user via deserializeUser).
+ */
+export const requireTotp = () => {
+  return (req: Request & { user?: any; session?: any }, res: any, next: any) => {
+    passport.authenticate('totp', { session: false }, (err: any, user: any, info: any) => {
+      if (err) return next(err);
+      if (!user) {
+        const e: any = new Error(info?.message || 'MFA required');
+        e.status = 401;
+        return next(e);
+      }
+      // ensure req.user remains set
+      req.user = user;
+      return next();
+    })(req, res, next);
+  };
+};
+
 export default passport;

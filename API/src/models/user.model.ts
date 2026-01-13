@@ -25,6 +25,12 @@ export interface IUser extends Document {
 
   /** Timestamp when the user was last updated - automatically managed by timestamps */
   updatedAt?: Date;
+  /** TOTP shared secret (base32) when MFA is enabled */
+  totpSecret?: string;
+  /** Temporary TOTP secret used during setup (not yet verified) */
+  tempTotpSecret?: string;
+  /** Whether MFA (TOTP) is enabled for the user */
+  mfaEnabled?: boolean;
 }
 
 /**
@@ -60,6 +66,20 @@ const userSchema: Schema<IUser> = new Schema(
       required: false,
       min: [0, 'Age cannot be negative'],
       max: [150, 'Age cannot exceed 150 years'],
+    },
+    // TOTP fields for MFA
+    totpSecret: {
+      type: String,
+      required: false,
+    },
+    tempTotpSecret: {
+      type: String,
+      required: false,
+    },
+    mfaEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   {

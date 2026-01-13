@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import User from '../../models/user.model';
 import bcrypt from 'bcrypt';
+import speakeasy from 'speakeasy';
 
 /**
  * Authentication controller containing HTTP endpoint handlers for user authentication.
@@ -10,6 +11,8 @@ import bcrypt from 'bcrypt';
 declare module 'express-session' {
     interface SessionData {
         user?: { email: string; name: string };
+        mfaVerified?: boolean;
+        mfaUserId?: string;
     }
 }
 
@@ -144,10 +147,23 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        // Store user info in session
-        req.session.user = { email: user.email, name: user.name || '' };
+        // Establish passport session (serializes user id)
+        (req as any).login(user, (err: any) => {
+            if (err) {
+                console.error('Login error:', err);
+                return res.status(500).json({ message: 'Internal server error' });
+            }
 
-        return res.status(200).json({ message: 'Login successful', user: req.session.user });
+            // Keep backward-compatible session.user
+            req.session.user = { email: user.email, name: user.name || '' };
+
+            // If user has MFA enabled, indicate that client must submit TOTP next
+            if ((user as any).mfaEnabled) {
+                return res.status(200).json({ message: 'MFA required', mfa: true });
+            }
+
+            return res.status(200).json({ message: 'Login successful', user: req.session.user });
+        });
 
     } catch (error) {
         console.error('Login error:', error);
@@ -186,4 +202,79 @@ export const logout = (req: Request, res: Response): void => {
         res.clearCookie('connect.sid');
         return res.status(200).json({ message: 'Logout successful' });
     });
+};
+
+/**
+ * Generate a TOTP secret for the authenticated user and return an otpauth URL for QR code.
+ * Route: POST /api/auth/totp/setup
+ */
+export const totpSetup = async (req: Request, res: Response): Promise<any> => {
+    try {
+        // Identify user: prefer req.user (passport) then session
+        const identifierEmail = (req.user as any)?.email || req.session?.user?.email;
+        if (!identifierEmail) return res.status(401).json({ message: 'Not authenticated' });
+
+        const user = await User.findOne({ email: identifierEmail });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Generate secret
+        const secret = speakeasy.generateSecret({ length: 20, name: `Junia IoT (${user.email})` });
+
+        // Store temporary secret until user verifies code
+        (user as any).tempTotpSecret = secret.base32;
+        await user.save();
+
+        return res.status(200).json({ otpauth_url: secret.otpauth_url, base32: secret.base32 });
+    } catch (error) {
+        console.error('TOTP setup error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+/**
+ * Verify a TOTP token. If setting up, promote temp secret to active; otherwise mark session as verified.
+ * Route: POST /api/auth/totp/verify
+ */
+export const totpVerify = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const token = req.body?.totp || req.headers['x-totp'] || req.query?.totp;
+        if (!token) return res.status(400).json({ message: 'TOTP token required' });
+
+        const identifierEmail = (req.user as any)?.email || req.session?.user?.email;
+        if (!identifierEmail) return res.status(401).json({ message: 'Not authenticated' });
+
+        const user = await User.findOne({ email: identifierEmail });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const secretToCheck = (user as any).tempTotpSecret || (user as any).totpSecret;
+        if (!secretToCheck) return res.status(400).json({ message: 'No TOTP secret configured' });
+
+        const verified = speakeasy.totp.verify({
+            secret: secretToCheck,
+            encoding: 'base32',
+            token: String(token),
+            window: 1,
+        });
+
+        if (!verified) return res.status(401).json({ message: 'Invalid TOTP' });
+
+        // If we were verifying during setup (temp secret exists), persist it
+        if ((user as any).tempTotpSecret) {
+            (user as any).totpSecret = (user as any).tempTotpSecret;
+            (user as any).tempTotpSecret = undefined;
+            (user as any).mfaEnabled = true;
+            await user.save();
+        }
+
+        // Mark session as MFA-verified
+        if (req.session) {
+            req.session.mfaVerified = true;
+            req.session.mfaUserId = user._id?.toString();
+        }
+
+        return res.status(200).json({ message: 'TOTP verified' });
+    } catch (error) {
+        console.error('TOTP verify error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
 };
